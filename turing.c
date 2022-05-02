@@ -1,12 +1,12 @@
-#include <iostream>
+#include <stdio.h>
 #include <sys/ioctl.h>
 #include <termios.h>
-using namespace std;
 
 int main() {
 
     //get window size
     struct winsize ws;
     ioctl(0, TIOCGWINSZ, &ws);
-    cout << ws.ws_col << "\n";
+    printf("%i\n",ws.ws_col);
+    return 0;
 }
