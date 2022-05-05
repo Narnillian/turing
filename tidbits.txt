@@ -1,0 +1,64 @@
+just saving some code here for later
+
+
+
+    //get window size
+    struct winsize ws;
+    ioctl(0, TIOCGWINSZ, &ws);
+    printf("%i\n",ws.ws_col);
+    printf("%i\n",ws.ws_row);
+    printf("Your terminal is %i columns tall by %i rows wide\n", ws.ws_col, ws.ws_row);
+
+
+
+
+
+
+copied from internet. going to use the Buffer part of this but not the mouse part:
+
+
+#include <stdio.h>
+#include <unistd.h> //<-- is just for the mouse, i think. try not adding it
+#include <termios.h>
+
+int main (void)
+{
+    unsigned char buff [6];
+    unsigned int x, y, btn;
+    struct termios original, raw;
+
+    // Save original serial communication configuration for stdin
+    tcgetattr (STDIN_FILENO, &original);
+
+    // Put stdin in raw mode so keys get through directly without
+    // requiring pressing enter.
+    cfmakeraw (&raw);
+    tcsetattr (STDIN_FILENO, TCSANOW, &raw);
+
+    // Switch to the alternate buffer screen
+    write (STDOUT_FILENO, "\e[?47h", 6);
+
+    // Enable mouse tracking
+    write (STDOUT_FILENO, "\e[?9h", 5);
+    while (1) {
+        read (STDIN_FILENO, &buff, 1);
+        if (buff[0] == 3) {
+            // User pressd Ctr+C
+            break;
+        } else if (buff[0] == '\x1B') {
+            // We assume all escape sequences received 
+            // are mouse coordinates
+            read (STDIN_FILENO, &buff, 5);
+            btn = buff[2] - 32;
+            x = buff[3] - 32;
+            y = buff[4] - 32;
+            printf ("button:%u\n\rx:%u\n\ry:%u\n\n\r", btn, x, y);
+        }
+    }
+
+    // Revert the terminal back to its original state
+    write (STDOUT_FILENO, "\e[?9l", 5);
+    write (STDOUT_FILENO, "\e[?47l", 6);
+    tcsetattr (STDIN_FILENO, TCSANOW, &original);
+    return 0;
+}
