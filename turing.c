@@ -90,7 +90,6 @@ int loadinstrs() {
                 }
                 readchar++;
                 allstates[states].title = *readchar;
-                readchar++; /* because the first character of the instruction is the indicator -- i.e. when it's called */
                 instr=0;
                 values++;
                 break;
@@ -109,9 +108,9 @@ int loadinstrs() {
                 if (verbose) printf("\033[41m%p\033[49m\n",allstates[states]);
                 instr++;
                 readchar++; /* because the first character of the instruction is the indicator -- i.e. when it's called */
-                continue;
-            default:
-                /* code */
+                break;
+            //default:
+                    /* code */
         }
     }
     if (verbose) printf("\n\n");
