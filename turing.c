@@ -22,7 +22,6 @@ Machine organization:
     -Pipe symbol -- splits States from Tape
     -Tape
         -Aterisk indicates initial head position
-
 */
 struct instr { //one instruction
     char newval; //write value of head
@@ -57,7 +56,7 @@ int values; //                  how many values a single tape square can have
 
 
 int main(int argc, char **argv) {
-    if (*argv[1] == 'v') verbose = 1; //this is temp
+    if (argv[1] && *argv[1] == 'v') verbose = 1; //this is temp
     fullspec = preset1; //this is temp
     printf("sizeof state: %d\n",sizeof(state));
     loadinstrs();
