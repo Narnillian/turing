@@ -11,7 +11,7 @@ Machine organization:
 (f4Lf,4Lf,3Rf,2Lf,0Rf,0Rb)(*b5LB,0Rb,5LB,4Rb,H,2Rb)(F5Rf,1RF,4Rb,2RF,H,1Rf)(B1LB,0RB,3LF,4RB,3LB,2RB)|00000005155*0000000
     -One state is encapsulated by parenthesis
     -If there's an asterisk, that's the initial state
-    -The next character is the State Shorthand
+    -The next characters until the semicolon is the State Shorthand
     -Instructions, seperated by commas:
         -Character to change tape[head] to
         -Direction to move -- exactly one square Right, Left, or Neither
@@ -30,15 +30,15 @@ struct instr { /* one instruction */
     char newstate;
 };
 struct state { /* one state of the machine */
-    char title;
+    char *title; /* direct title of state -- can be as long as you want, above length 0 */
     char *nickname; /*used for longer, more descriptive names for the state -- haven't done yet */
     instr *instructions;
 
 };
 struct square { /* one square of the tape */
+    char value;
     square *prev;
     square *next;
-    char value;
 
 };
 
@@ -47,7 +47,7 @@ int loadinstrs();
 int freevars();
 
 char verbose = 0;
-char *preset1 = "(f4Lf,4Lf,3Rf,2Lf,0Rf,0Rb)(*b5LB,0Rb,5LB,4Rb,H,2Rb)(F5Rf,1RF,4Rb,2RF,H,1Rf)(B1LB,0RB,3LF,4RB,3LB,2RB)|00000005155*0000000";
+char *preset1 = "(f;4Lf,4Lf,3Rf,2Lf,0Rf,0Rb)(*b;5LB,0Rb,5LB,4Rb,H,2Rb)(F;5Rf,1RF,4Rb,2RF,H,1Rf)(B;1LB,0RB,3LF,4RB,3LB,2RB)|00000005155*0000000";
 char *preset2 = NULL; /*        these will be made eventually                   */
 char *preset3 = NULL; /*        there will be preset machines                   */
 char *fullspec = NULL; /*       machine we are using                            */
@@ -88,8 +88,15 @@ int loadinstrs() {
                     actstate = states;
                     readchar++;
                 }
-                readchar++;
-                allstates[states].title = *readchar;
+                {
+                    int iter = 0;
+                    while(++iter) {
+                        readchar++;
+                        if (*readchar == ';') break;
+                        allstates[states].title = realloc(allstates[states].title, iter*sizeof(*allstates[states].title));
+                        allstates[states].title[iter-1] = *readchar;
+                    }
+                }
                 instr=0;
                 values++;
                 break;
@@ -110,13 +117,14 @@ int loadinstrs() {
                 readchar++; /* because the first character of the instruction is the indicator -- i.e. when it's called */
                 break;
             //default:
+                
                     /* code */
         }
     }
     if (verbose) printf("\n\n");
     printf("There are %d states\n",states);
     printf("There are %d insructions per state\n", instr);
-    printf("1-char name of Set [1]: '%c'\n", allstates[1].title); /* b -- THIS IS WORKING */
+    printf("Name of Set [1]: '%s'\n", allstates[1].title); /* b -- THIS IS WORKING */
     //printf("Instruction [2] at Set [1]: %c\n", statelist[1].instructions[2]); /* 25LB */
     return 0;
 }
