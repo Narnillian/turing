@@ -3,7 +3,6 @@
 #include <sys/ioctl.h> /* IO control */
 #include <termios.h>   /* terminal interface */
 typedef struct square square;
-typedef struct state state;
 typedef struct instr instr;
 
 /*
@@ -27,14 +26,14 @@ Machine organization:
 struct instr { /* one instruction */
     char newval; /* write value of head */
     char movehead; /* based on moving right -- positive is right, negative is left, 0 is neither. will only move one position no matter the value (unless neither) */
-    char newstate;
+    char *newstate;
 };
-struct state { /* one state of the machine */
+struct {
     char *title; /* direct title of state -- can be as long as you want, above length 0 */
     char *nickname; /*used for longer, more descriptive names for the state -- haven't done yet */
     instr *instructions;
 
-};
+} *allstates = NULL; /* global list of all states */
 struct square { /* one square of the tape */
     char value;
     square *prev;
@@ -51,7 +50,6 @@ char *preset1 = "(f;4Lf,4Lf,3Rf,2Lf,0Rf,0Rb)(*b;5LB,0Rb,5LB,4Rb,H,2Rb)(F;5Rf,1RF
 char *preset2 = NULL; /*        these will be made eventually                   */
 char *preset3 = NULL; /*        there will be preset machines                   */
 char *fullspec = NULL; /*       machine we are using                            */
-state *allstates = NULL; /*     all instruction sets                            */
 int actstate; /*                active state                                    */
 int values; /*                  how many values a single tape square can have   */
 
