@@ -7,7 +7,7 @@ typedef struct instr instr;
 
 /*
 Machine organization:
-(f4Lf,4Lf,3Rf,2Lf,0Rf,0Rb)(*b5LB,0Rb,5LB,4Rb,H,2Rb)(F5Rf,1RF,4Rb,2RF,H,1Rf)(B1LB,0RB,3LF,4RB,3LB,2RB)|00000005155*0000000
+(f;4Lf,4Lf,3Rf,2Lf,0Rf,0Rb)(*b;5LB,0Rb,5LB,4Rb,H,2Rb)(F;5Rf,1RF,4Rb,2RF,H,1Rf)(B;1LB,0RB,3LF,4RB,3LB,2RB)|00000005155*0000000
     -One state is encapsulated by parenthesis
     -If there's an asterisk, that's the initial state
     -The next characters until the semicolon is the State Shorthand
@@ -29,6 +29,7 @@ struct {
     char *nickname; /*used for longer, more descriptive names for the state -- haven't done yet */
     
     struct { /* one instruction */
+        char halt; /* positive value if instruction is HALT */
         char newval; /* write value of head */
         char movehead; /* based on moving right -- positive is right, negative is left, 0 is neither. will only move one position no matter the value (unless neither) */
         char *newstate;
@@ -66,17 +67,22 @@ int main(int argc, char **argv) {
 }
 
 int loadinstrs() {
-    char *split = NULL;
+    char *split = 0;
     int states = 0;
     int instrs = 0;
     char instrpart;
     for (char *readchar = fullspec; *readchar; readchar++) {
+        printf("\033[46m\"%c\"\033[49m\n",*readchar);
         switch (*readchar) {
             case '|':
+                printf("PIPE-CHAR!\n");
                 /* end of instructions */
+                printf("%p\n",split);
                 split = readchar;
+                printf("%p\n",split);
                 break;
             case '(':
+                printf("OPEN-PAREN\n");
                 /* new set */
                 if (verbose) {
                     printf(">%d\n>%d\n", sizeof(*allstates), (states+1)*sizeof(*allstates));
@@ -94,8 +100,11 @@ int loadinstrs() {
                     int iter = 0;
                     while(++iter) {
                         readchar++;
-                        if (*readchar == ';') break;
-                        printf("(%d\n>%d\n<%d\n!!%d\n",states,iter,sizeof(*allstates[states].title),iter*sizeof(*allstates[states].title));
+                        if (*readchar == ';') {
+                            //readchar++;
+                            break;
+                        }
+                        if (verbose) printf("(%d\n(%d\n(%d\n(%d\n",states,iter,sizeof(*allstates[states].title),iter*sizeof(*allstates[states].title));
                         allstates[states].title = realloc(allstates[states].title, iter*sizeof(*allstates[states].title));
                         allstates[states].title[iter-1] = *readchar;
                     }
@@ -105,10 +114,12 @@ int loadinstrs() {
                 instrs = 0;
                 break;
             case ')':
+                printf("CLOSE-PAREN\n");
                 states++;
                 if (verbose) printf("There are \033[42m%d instructions per state\033[49m\n", ++instrs);
                 break;
             case ',':
+                printf("COMMA-SEPER\n");
                 /* end of instruction */
                 if (verbose) {
                     printf("^%d\n^%d\n", sizeof(*allstates[states].instructions), (instrs+1)*sizeof(*allstates[states].instructions));
@@ -117,12 +128,51 @@ int loadinstrs() {
                 allstates[states].instructions = realloc(allstates[states].instructions, (instrs+1)*sizeof(*allstates[states].instructions));
                 if (verbose) printf("\033[41m%p\033[49m\n",allstates[states]);
                 instrs++;
-                readchar++; /* because the first character of the instruction is the indicator -- i.e. when it's called */
                 break;
             default:
-                //printf("%d || %d\n",states,instrs);
+                printf("DEFAULT\n");
+                printf("%d || %d\n",states,instrs);
                 //printf("%p\n",allstates[states].instructions);
-                allstates[states].instructions[instrs].newval = *readchar;
+                //printf("%p\n",readchar);
+                //printf("%p\n",++readchar);
+                //readchar--;
+                //printf("%p\n\n",readchar++);
+                //readchar--;
+                
+                readchar+=2;
+
+                //allstates[states].instructions[instrs].newval = *readchar;
+                //readchar++;
+                //switch(*readchar) {
+                //    case 'L':
+                //        printf("LEFT\n");
+                //        allstates[states].instructions[instrs].movehead = -1;
+                //        break;
+                //    case 'R':
+                //        printf("RITE\n");
+                //        allstates[states].instructions[instrs].movehead = 1;
+                //        break;
+                //    default:
+                //        printf("NONE\n");
+                //        allstates[states].instructions[instrs].movehead = 0;
+                //}
+                //readchar++;
+                //readchar+=1;
+
+                //{
+                //    int iter = 0;
+                //    while(++iter) {
+                //        if (*readchar == ';') {
+                //            readchar--;
+                //            break;
+                //        };
+                //        //if (verbose) printf(")%d\n)%d\n)%d\n)%d\n",states,iter,sizeof(*allstates[states].instructions[instrs].newstate),iter*sizeof(*allstates[states].instructions[instrs].newstate));
+                //        allstates[states].instructions[instrs].newstate = realloc(allstates[states].instructions[instrs].newstate, iter*sizeof(*allstates[states].instructions[instrs].newstate));
+                //        allstates[states].instructions[instrs].newstate[iter-1] = *readchar;
+                //        readchar++;
+                //    }
+                //}
+        if (split) break;
         }
     }
     if (verbose) printf("\n\n");
@@ -132,6 +182,7 @@ int loadinstrs() {
     printf("Name of Set [1]: '%s'\n", allstates[1].title); /* b -- THIS IS WORKING */
     printf("Name of Set [2]: '%s'\n", allstates[2].title); /* F -- THIS IS WORKING */
     printf("Name of Set [3]: '%s'\n", allstates[3].title); /* B -- THIS IS WORKING */
+    //printf("New value of instruction [0] in set [0]: %c\n", allstates[0].instructions[0].newval);
     //printf("Instruction [2] at Set [1]: %c\n", allstates[1].instructions[2]); /* 25LB */
     return 0;
 }
