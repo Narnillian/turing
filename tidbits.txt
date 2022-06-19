@@ -15,7 +15,7 @@ just saving some code here for later
 
 
 copied from internet. going to use the Buffer part of this but not the mouse part:
-
+use "\e[?1049h" and "\e[1049l" instead of 47h and 47l
 
 #include <stdio.h>
 #include <unistd.h> //<-- is just for the mouse, i think. try not adding it
