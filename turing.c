@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/ioctl.h> /* IO control */
-#include <termios.h>   /* terminal interface */
+//#include <sys/ioctl.h> /* IO control */
+//#include <termios.h>   /* terminal interface */
 typedef struct square square;
 typedef struct instr instr;
 
@@ -80,6 +80,7 @@ int loadinstrs() {
                 printf("^%d\n^%d\n", sizeof(*allstates[states].instructions), (instrs+1)*sizeof(*allstates[states].instructions));
                 printf("There are \033[42m%d instructions per state\033[0m\n", instrs+1);
             }
+            if (verbose) printf("\033[101mBEFOR)%p\033[0m\n",allstates[states].instructions);
             allstates[states].instructions = realloc(allstates[states].instructions, (instrs+1)*sizeof(*allstates[states].instructions));
             if (verbose) printf("\033[41m%p\033[0m\n",allstates[states]);
             instrs++;
@@ -125,12 +126,6 @@ int loadinstrs() {
         }
         printf("DEFAULT\n");
         printf("%d || %d\n",states,instrs);
-        //printf("%p\n",allstates[states].instructions);
-        //printf("%p\n",readchar);
-        //printf("%p\n",++readchar);
-        //readchar--;
-        //printf("%p\n\n",readchar++);
-        //readchar--;
         if (*readchar=='H') {
             allstates[states].instructions[instrs].halt = 1;
             continue;
@@ -160,7 +155,9 @@ int loadinstrs() {
                     printf("FULL NEWSTATE of %d,%d --- %s\n",states, instrs, allstates[states].instructions[instrs].newstate);
                 }
                 readchar++;
-            } while (*(readchar+1) != ',' && *(readchar+1) != ')');
+            } while (*(readchar) != ',' && *(readchar) != ')');
+            readchar--;
+            //printf("\033[100m%s\033[0m",*readchar);
         }
     }
     if (verbose) printf("\n\n");
