@@ -53,7 +53,7 @@ char *preset1 = "(f;4Lf,4Lf,3Rf,2Lf,0Rf,0Rb)(*b;5LB,0Rb,5LB,4Rb,H,2Rb)(F;5Rf,1RF
 char *preset2 = NULL; /*        these will be made eventually                   */
 char *preset3 = NULL; /*        there will be preset machines                   */
 char *fullspec = NULL; /*       machine we are using                            */
-int actstate; /*                active state                                    */
+int actstate = 0; /*                active state                                    */
 //int values; /*                  how many values a single tape square can have   */
 
 
@@ -67,98 +67,109 @@ int main(int argc, char **argv) {
 }
 
 int loadinstrs() {
-    char *split = 0;
+    char *split = NULL;
     int states = 0;
     int instrs = 0;
     char instrpart;
-    for (char *readchar = fullspec; *readchar; readchar++) {
+    char *readchar = fullspec;
+
+    while (readchar) {
         printf("\033[46m\"%c\"\033[0m\n",*readchar);
-        if (*readchar == ',') {
-            printf("COMMA-SEPER\n");
-            /* end of instruction */
-            if (verbose) {
-                printf("^%d\n^%d\n", sizeof(*allstates[states].instructions), (instrs+1)*sizeof(*allstates[states].instructions));
-                printf("There are \033[42m%d instructions per state\033[0m\n", instrs+1);
-            }
-            if (verbose) printf("\033[101mBEFOR)%p\033[0m\n",allstates[states].instructions);
-            allstates[states].instructions = realloc(allstates[states].instructions, (instrs+1)*sizeof(*allstates[states].instructions));
-            if (verbose) printf("\033[41m%p\033[0m\n",allstates[states]);
-            instrs++;
-            continue;
-        } else if (*readchar == '(') {
-            printf("OPEN-PAREN\n");
-            /* new set */
-            if (verbose) {
-                printf(">%d\n>%d\n", sizeof(*allstates), (states+1)*sizeof(*allstates));
-                printf("There are \033[46m%d instruction sets\033[0m\n", states+1);
-            }
-            allstates = realloc(allstates, (states+1)*sizeof(*allstates));
-            allstates[states].instructions = NULL;
-            allstates[states].instructions = realloc(allstates[states].instructions, (instrs+1)*sizeof(*allstates[states].instructions));
-            if (*(readchar+1)=='*') {
-                actstate = states;
-                readchar++;
-            }
-            {
-                int iter = 0;
-                while (*++readchar != ';') {
-                    printf("TITLE --- \033[102m\"%c\"\033[0m\n",*readchar);
-                    if (iter < 3) {
-                        allstates[states].title[iter++] = *readchar;
-                        printf("\tFULL TITLE of %d --- %s\n",states, allstates[states].title);
-                    }
-                }
-            }
-            //values++;
-            instrs = 0;
-            continue;
-        } else if (*readchar == ')') {
-            printf("CLOSE-PAREN\n");
-            states++;
-            if (verbose) printf("There are \033[42m%d instructions per state\033[0m\n", ++instrs);
-            continue;
-        } else if (*readchar == '|') {
+
+        /* end of instructions */
+        if (*readchar == '|') {
             printf("PIPE-CHAR!\n");
-            /* end of instructions */
             split = readchar;
             printf("\033[100m%p\033[0m\n",allstates[states]);
             break;
         }
-        printf("DEFAULT\n");
-        printf("%d || %d\n",states,instrs);
-        if (*readchar=='H') {
-            allstates[states].instructions[instrs].halt = 1;
-            continue;
-        }
 
-        allstates[states].instructions[instrs].newval = *readchar++;
-        //readchar++;
-        switch(*readchar++) {
-            case 'L':
-                printf("LEFT\n");
-                allstates[states].instructions[instrs].movehead = -1;
-                break;
-            case 'R':
-                printf("RITE\n");
-                allstates[states].instructions[instrs].movehead = 1;
-                break;
-            default:
-                printf("NONE\n");
-                allstates[states].instructions[instrs].movehead = 0;
+
+        /* new set */
+        printf("OPEN-PAREN\n");
+        if (verbose) {
+            printf(">%d\n>%d\n", sizeof(*allstates), (states+1)*sizeof(*allstates));
+            printf("There are \033[46m%d instruction sets\033[0m\n", states+1);
+        }
+        allstates = realloc(allstates, (states+1)*sizeof(*allstates));
+        allstates[states].instructions = NULL;
+        allstates[states].instructions = realloc(allstates[states].instructions, (instrs+1)*sizeof(*allstates[states].instructions));
+        if (*(readchar+1)=='*') {
+            actstate = states;
+            readchar++;
         }
         {
             int iter = 0;
-            do {
-                printf("NSTATE --- \033[102m\"%c\"\033[0m\n",*readchar);
+            while (*++readchar != ';') {
+                printf("TITLE --- \033[102m\"%c\"\033[0m\n",*readchar);
                 if (iter < 3) {
-                    allstates[states].instructions[instrs].newstate[iter++] = *readchar;
-                    printf("FULL NEWSTATE of %d,%d --- %s\n",states, instrs, allstates[states].instructions[instrs].newstate);
+                    allstates[states].title[iter++] = *readchar;
+                    printf("\tFULL TITLE of %d --- %s\n",states, allstates[states].title);
                 }
-                readchar++;
-            } while (*(readchar) != ',' && *(readchar) != ')');
-            readchar--;
-            //printf("\033[100m%s\033[0m",*readchar);
+            }
         }
+        readchar++;
+        instrs = 0;
+
+
+        /* the actual reading of instructions */
+        while (1) {
+            /* get instruction */
+            printf("DEFAULT\n");
+            printf("%d || %d\n",states,instrs);
+            if (*readchar=='H') {   
+                allstates[states].instructions[instrs].halt = 1;
+                continue;
+            }
+            allstates[states].instructions[instrs].newval = *readchar++;
+            //printf("\033[43mnv: \"%c\"\033[0m\n",allstates[states].instructions[instrs].newval);
+            //printf("\033[43mrc: \"%c\"\033[0m\n",*readchar);
+            switch(*readchar++) {
+                case 'L':
+                    printf("LEFT\n");
+                    allstates[states].instructions[instrs].movehead = -1;
+                    break;
+                case 'R':
+                    printf("RIHT\n");
+                    allstates[states].instructions[instrs].movehead = 1;
+                    break;
+                default:
+                    printf("NONE\n");
+                    allstates[states].instructions[instrs].movehead = 0;
+            }
+            {
+                int iter = 0;
+                do {
+                    printf("NSTATE --- \033[102m\"%c\"\033[0m\n",*readchar);
+                    if (iter < 3) {
+                        allstates[states].instructions[instrs].newstate[iter++] = *readchar;
+                        printf("FULL NEWSTATE of %d,%d --- %s\n",states, instrs, allstates[states].instructions[instrs].newstate);
+                    }
+                    readchar++;
+                } while (*(readchar) != ',' && *(readchar) != ')');
+                //printf("\033[100m%s\033[0m",*readchar);
+            }
+            /* if there's another instruction, realloc and continue */
+            if (*readchar == ',') {
+                printf("COMMA-SEPER\n");
+                /* end of instruction */
+                if (verbose) {
+                    printf("^%d\n^%d\n", sizeof(*allstates[states].instructions), (instrs+1)*sizeof(*allstates[states].instructions));
+                    printf("There are \033[42m%d instructions per state\033[0m\n", instrs+1);
+                }
+                if (verbose) printf("\033[101mBEFOR)%p\033[0m\n",allstates[states].instructions);
+                allstates[states].instructions = realloc(allstates[states].instructions, (instrs+1)*sizeof(*allstates[states].instructions));
+                if (verbose) printf("\033[41m%p\033[0m\n",allstates[states]);
+                instrs++;
+                readchar++;
+                continue;
+            } else { readchar++; break; }
+        }
+        printf("CLOSE-PAREN\n");
+        states++;
+        if (verbose) printf("There are \033[42m%d instructions per state\033[0m\n", ++instrs);
+        readchar++;
+
     }
     if (verbose) printf("\n\n");
     printf("There are %d states\n",states);
