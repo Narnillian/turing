@@ -139,6 +139,9 @@ int loadinstrs() {
             }
             {
                 int iter = 0;
+                allstates[states].instructions[instrs].newstate[0] = 0;
+                allstates[states].instructions[instrs].newstate[1] = 0;
+                allstates[states].instructions[instrs].newstate[2] = 0;
                 do {
                     printf("NSTATE --- \033[102m\"%c\"\033[0m\n",*readchar);
                     if (iter < 3) {
@@ -154,10 +157,11 @@ int loadinstrs() {
                 printf("COMMA-SEPER\n");
                 /* end of instruction */
                 if (verbose) {
-                    printf("^%d\n^%d\n", sizeof(*allstates[states].instructions), (instrs+1)*sizeof(*allstates[states].instructions));
                     printf("There are \033[42m%d instructions per state\033[0m\n", instrs+1);
+                    printf("^%d\n^%d\n", sizeof(*allstates[states].instructions), (instrs+1)*sizeof(*allstates[states].instructions));
+                    printf("\033[101mBEFOR)%p\033[0m\n",allstates[states].instructions);
                 }
-                if (verbose) printf("\033[101mBEFOR)%p\033[0m\n",allstates[states].instructions);
+                //allstates[states].instructions = NULL;
                 allstates[states].instructions = realloc(allstates[states].instructions, (instrs+1)*sizeof(*allstates[states].instructions));
                 if (verbose) printf("\033[41m%p\033[0m\n",allstates[states]);
                 instrs++;
