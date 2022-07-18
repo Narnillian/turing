@@ -3,7 +3,6 @@
 //#include <sys/ioctl.h> /* IO control */
 //#include <termios.h>   /* terminal interface */
 typedef struct square square;
-typedef struct instr instr;
 
 /*
 Machine organization:
@@ -44,7 +43,7 @@ struct square { /* one square of the tape */
 
 };
 
-
+void *n_realloc(void * ptr, size_t size);
 int loadinstrs();
 int freevars();
 
@@ -53,7 +52,7 @@ char *preset1 = "(f;4Lf,4Lf,3Rf,2Lf,0Rf,0Rb)(*b;5LB,0Rb,5LB,4Rb,H,2Rb)(F;5Rf,1RF
 char *preset2 = NULL; /*        these will be made eventually                   */
 char *preset3 = NULL; /*        there will be preset machines                   */
 char *fullspec = NULL; /*       machine we are using                            */
-int actstate = 0; /*                active state                                    */
+int actstate = 0; /*            active state                                    */
 //int values; /*                  how many values a single tape square can have   */
 
 
@@ -65,6 +64,15 @@ int main(int argc, char **argv) {
     freevars();
     return 0;
 }
+
+void *n_realloc(void *ptr, size_t size) {
+    void *tmp = realloc(ptr,size);
+    if (!tmp) {
+        printf("YOU HAD A PROBLEM");
+        exit(55);
+    } else return tmp;
+}
+
 
 int loadinstrs() {
     char *split = NULL;
@@ -91,9 +99,9 @@ int loadinstrs() {
             printf(">%d\n>%d\n", sizeof(*allstates), (states+1)*sizeof(*allstates));
             printf("There are \033[46m%d instruction sets\033[0m\n", states+1);
         }
-        allstates = realloc(allstates, (states+1)*sizeof(*allstates));
+        allstates = n_realloc(allstates, (states+1)*sizeof(*allstates));
         allstates[states].instructions = NULL;
-        allstates[states].instructions = realloc(allstates[states].instructions, (instrs+1)*sizeof(*allstates[states].instructions));
+        allstates[states].instructions = n_realloc(allstates[states].instructions, (instrs+1)*sizeof(*allstates[states].instructions));
         if (*(readchar+1)=='*') {
             actstate = states;
             readchar++;
@@ -121,7 +129,8 @@ int loadinstrs() {
                 allstates[states].instructions[instrs].halt = 1;
                 continue;
             }
-            allstates[states].instructions[instrs].newval = *readchar++;
+            allstates[states].instructions[instrs].newval = readchar[0];
+            readchar++;
             //printf("\033[43mnv: \"%c\"\033[0m\n",allstates[states].instructions[instrs].newval);
             //printf("\033[43mrc: \"%c\"\033[0m\n",*readchar);
             switch(*readchar++) {
@@ -162,12 +171,14 @@ int loadinstrs() {
                     printf("\033[101mBEFOR)%p\033[0m\n",allstates[states].instructions);
                 }
                 //allstates[states].instructions = NULL;
-                allstates[states].instructions = realloc(allstates[states].instructions, (instrs+1)*sizeof(*allstates[states].instructions));
+                allstates[states].instructions = n_realloc(allstates[states].instructions, (instrs+1)*sizeof(*allstates[states].instructions));
                 if (verbose) printf("\033[41m%p\033[0m\n",allstates[states]);
                 instrs++;
                 readchar++;
                 continue;
-            } else { readchar++; break; }
+            }
+            readchar++;
+            break;
         }
         printf("CLOSE-PAREN\n");
         states++;
@@ -184,7 +195,7 @@ int loadinstrs() {
     printf("Name of Set [3]: '%s'\n", allstates[3].title); /* B -- THIS IS WORKING */
     printf("New value of instruction [0] in set [0]: %c\n", allstates[0].instructions[0].newval);
     printf("New state of instruction [5] in set [2]: %c\n", allstates[2].instructions[5].newstate);
-    //printf("Instruction [2] at Set [1]: %c\n", allstates[1].instructions[2]); /* 25LB */
+    //printf("Instruction [2] at Set [1]: %c\n", allstates[1].instructions[2]); /* 5LB */
     return 0;
 }
 
