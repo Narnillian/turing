@@ -68,7 +68,7 @@ int main(int argc, char **argv) {
 void *n_realloc(void *ptr, size_t size) {
     void *tmp = realloc(ptr,size);
     if (!tmp) {
-        printf("YOU HAD A PROBLEM");
+        printf("YOU HAD A PROBLEM REALLOCING");
         exit(55);
     } else return tmp;
 }
@@ -129,7 +129,9 @@ int loadinstrs() {
                 allstates[states].instructions[instrs].halt = 1;
                 continue;
             }
-            allstates[states].instructions[instrs].newval = readchar[0];
+            char tmp = *readchar;
+            printf("%dHELLO%d\n",sizeof(allstates[0].instructions[1].newval),sizeof(tmp));
+            allstates[states].instructions[instrs].newval = tmp;
             readchar++;
             //printf("\033[43mnv: \"%c\"\033[0m\n",allstates[states].instructions[instrs].newval);
             //printf("\033[43mrc: \"%c\"\033[0m\n",*readchar);
