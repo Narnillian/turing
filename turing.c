@@ -28,9 +28,9 @@ struct {
     char *nickname; /*used for longer, more descriptive names for the state -- haven't done yet */
     
     struct { /* one instruction */
-        char halt; /* positive value if instruction is HALT */
+        unsigned int halt:1; /* positive value if instruction is HALT */
+        unsigned int movehead:2; /* 01 means RIGHT, 11 means LEFT, 00 means NONE */
         char newval; /* write value of head */
-        char movehead; /* based on moving right -- positive is right, negative is left, 0 is neither. will only move one position no matter the value (unless neither) */
         char newstate[3];
     } *instructions;
 
@@ -49,8 +49,8 @@ int freevars();
 
 char verbose = 0;
 char *preset1 = "(f;4Lf,4Lf,3Rf,2Lf,0Rf,0Rb)(*b;5LB,0Rb,5LB,4Rb,H,2Rb)(F;5Rf,1RF,4Rb,2RF,H,1Rf)(B;1LB,0RB,3LF,4RB,3LB,2RB)|00000005155*0000000";
-char *preset2 = NULL; /*        these will be made eventually                   */
-char *preset3 = NULL; /*        there will be preset machines                   */
+char *preset2 = NULL; /*        these will be made eventually                   */  /* i may want to make them external files, so it doesn't take up too much */
+char *preset3 = NULL; /*        there will be preset machines                   */  /* memory, and other people could use the special features i have planned */
 char *fullspec = NULL; /*       machine we are using                            */
 int actstate = 0; /*            active state                                    */
 //int values; /*                  how many values a single tape square can have   */
@@ -138,7 +138,7 @@ int loadinstrs() {
             switch(*readchar++) {
                 case 'L':
                     printf("LEFT\n");
-                    allstates[states].instructions[instrs].movehead = -1;
+                    allstates[states].instructions[instrs].movehead = 3;
                     break;
                 case 'R':
                     printf("RIHT\n");
