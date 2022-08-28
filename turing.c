@@ -24,7 +24,7 @@ Machine organization:
 */
 
 struct {
-    char title[3]; /* direct title of state -- can be as long as you want, above length 0 */
+    char title[3]; /* direct title of state -- up to 3 chars */
     char *nickname; /*used for longer, more descriptive names for the state -- haven't done yet */
     
     struct { /* one instruction */
@@ -49,8 +49,8 @@ int freevars();
 
 char verbose = 0;
 char *preset1 = "(f;4Lf,4Lf,3Rf,2Lf,0Rf,0Rb)(*b;5LB,0Rb,5LB,4Rb,H,2Rb)(F;5Rf,1RF,4Rb,2RF,H,1Rf)(B;1LB,0RB,3LF,4RB,3LB,2RB)|00000005155*0000000";
-char *preset2 = NULL; /*        these will be made eventually                   */  /* i may want to make them external files, so it doesn't take up too much */
-char *preset3 = NULL; /*        there will be preset machines                   */  /* memory, and other people could use the special features i have planned */
+char *preset2 = NULL; /*          these will be made eventually                 */  /* i may want to make them external files, so it doesn't take up too much */
+char *preset3 = NULL; /*          there will be preset machines                 */  /* memory, and other people could use the special features i have planned */
 char *fullspec = NULL; /*       machine we are using                            */
 int actstate = 0; /*            active state                                    */
 //int values; /*                  how many values a single tape square can have   */
@@ -66,6 +66,7 @@ int main(int argc, char **argv) {
 }
 
 void *n_realloc(void *ptr, size_t size) {
+    ptr = NULL;
     void *tmp = realloc(ptr,size);
     if (!tmp) {
         printf("YOU HAD A PROBLEM REALLOCING");
@@ -100,7 +101,7 @@ int loadinstrs() {
             printf("There are \033[46m%d instruction sets\033[0m\n", states+1);
         }
         allstates = n_realloc(allstates, (states+1)*sizeof(*allstates));
-        allstates[states].instructions = NULL;
+        //allstates[states].instructions = NULL;
         allstates[states].instructions = n_realloc(allstates[states].instructions, (instrs+1)*sizeof(*allstates[states].instructions));
         if (*(readchar+1)=='*') {
             actstate = states;
@@ -126,11 +127,22 @@ int loadinstrs() {
             printf("DEFAULT\n");
             printf("%d || %d\n",states,instrs);
             if (*readchar=='H') {   
-                allstates[states].instructions[instrs].halt = 1;
+                printf("HALT\n");
+                allstates[states].instructions[instrs].halt=1;
+                instrs++;
+                /* end of instruction */
+                if (verbose) {
+                    printf("There are \033[42m%d instructions per state\033[0m\n", instrs+1);
+                    printf("^%d\n^%d\n", sizeof(*allstates[states].instructions), (instrs+1)*sizeof(*allstates[states].instructions));
+                    printf("\033[101mBEFOR)%p\033[0m\n",allstates[states].instructions);
+                }
+                //allstates[states].instructions = NULL;
+                allstates[states].instructions = n_realloc(allstates[states].instructions, (instrs+1)*sizeof(*allstates[states].instructions));
+                if (verbose) printf("\033[41m%p\033[0m\n",allstates[states]);
+                readchar+=2;
                 continue;
             }
             char tmp = *readchar;
-            printf("%dHELLO%d\n",sizeof(allstates[0].instructions[1].newval),sizeof(tmp));
             allstates[states].instructions[instrs].newval = tmp;
             readchar++;
             //printf("\033[43mnv: \"%c\"\033[0m\n",allstates[states].instructions[instrs].newval);
@@ -166,6 +178,7 @@ int loadinstrs() {
             /* if there's another instruction, realloc and continue */
             if (*readchar == ',') {
                 printf("COMMA-SEPER\n");
+                instrs++;
                 /* end of instruction */
                 if (verbose) {
                     printf("There are \033[42m%d instructions per state\033[0m\n", instrs+1);
@@ -175,7 +188,6 @@ int loadinstrs() {
                 //allstates[states].instructions = NULL;
                 allstates[states].instructions = n_realloc(allstates[states].instructions, (instrs+1)*sizeof(*allstates[states].instructions));
                 if (verbose) printf("\033[41m%p\033[0m\n",allstates[states]);
-                instrs++;
                 readchar++;
                 continue;
             }
@@ -186,6 +198,7 @@ int loadinstrs() {
         states++;
         if (verbose) printf("There are \033[42m%d instructions per state\033[0m\n", ++instrs);
         readchar++;
+        if (*(readchar-1) == '|') break;
 
     }
     if (verbose) printf("\n\n");
