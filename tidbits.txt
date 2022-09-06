@@ -62,3 +62,13 @@ int main (void)
     tcsetattr (STDIN_FILENO, TCSANOW, &original);
     return 0;
 }
+
+
+//function name self-explanatory. we'll see if i actually use this
+void *newsquare(void *left, void *right, int value) {
+    tape = n_realloc(tape,sizeof(tape)/sizeof(tape[0]));
+    int square=sizeof(tape)-1;
+    tape[square].left  = left;
+    tape[square].right = right;
+    return &tape[square];
+}
