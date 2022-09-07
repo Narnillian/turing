@@ -53,6 +53,7 @@ int freevars();
 u_int8_t verbose = 0;
 u_int8_t xverbose = 0;
 char *preset1 = "(f;4Lf,4Lf,3Rf,2Lf,0Rf,0Rb)(*b;5LB,0Rb,5LB,4Rb,H,2Rb)(F;5Rf,1RF,4Rb,2RF,H,1Rf)(B;1LB,0RB,3LF,4RB,3LB,2RB)|00000005155*0000000";
+                                                                                                                           
 char *preset2 = NULL; /*          these will be made eventually                 */  /* i may want to make them external files, so it doesn't take up too much */
 char *preset3 = NULL; /*          there will be preset machines                 */  /* memory, and other people could use the special features i have planned */
 char *fullspec = NULL; /*       machine we are using                            */
@@ -63,7 +64,7 @@ int values; /*                  how many values a single tape square can have   
 
 int main(int argc, char **argv) {
     if (argv[1] && *argv[1] == 'v') verbose = 1; /* this is temp */
-    //if (argv[1] && *argv[1] == "vv") xverbose = 1; /* this is wrong */ //frick this
+    //if (argv[1] && *argv[1] == "vv") xverbose = 1; /* this is wrong */ //screw this
     fullspec = preset1; /* this is temp */
     //printf("Instruction loading:\n\n");
     loadinstrs();
@@ -74,7 +75,6 @@ int main(int argc, char **argv) {
 
 
 void *n_realloc(void *ptr, size_t size) {
-    //ptr = NULL;
     void *tmp = realloc(ptr,size);
     if (!tmp) {
         printf("YOU HAD A PROBLEM REALLOCING");
@@ -231,15 +231,15 @@ int loadinstrs() {
 int loadtape() {
     char *readchar = fullspec;
     int squares = 0;
-    printf("%c\n",*readchar);
     readchar++;
 
     while (*readchar) {
-        printf("%c=>%d\n",*readchar,squares);
+        //printf("%c=>%d\n",*readchar,squares);
         tape = n_realloc(tape,(squares+1)*sizeof(tape[0]));
         if (*readchar == '*') {
             readchar++;
             head = &tape[squares];
+            continue; /* this is just to make the printf debug make more sense. not necessary */
         }
         tape[squares].value = *readchar;
         tape[squares].right = NULL;
@@ -254,10 +254,7 @@ int loadtape() {
         
     }
 
-    //printf("<%c\n", head->left->value);
-    //printf("<%c\n", head.left.value);
-    //printf("~")
-    printf("%s\n",tapetostring());
+    printf("%s\n",tapetostring()); /* not permanent */
 
     return 0;
 
@@ -268,14 +265,18 @@ char *tapetostring() {
     square *square = &tape[0];
     char *string = malloc((size_t)1);
     int length = 1;
+    //printf("\n\n~~\n1)%p\n2)%d\n",tape,sizeof(tape));
     while (square->left != NULL) {
         square = square->left;
+        //printf("3)%p\n",square);
     }
-    while (square->right != NULL) {
-        if (length > strlen(string)) {string = n_realloc(string, length+1);}
-        printf("<%d || %c\n",length,square->right->value);
-        string[length-1] = square->right->value;
-        square = square->right;
+    //printf("3)%p\n",square);
+    while (1) {
+        string = n_realloc(string, length+1);
+        //printf("<%d||%c\n",length,square->value);
+        string[length-1] = square->value;
+        //if (square->right != NULL) {square = square->right;} else break;
+        square = square->right ? square->right : NULL; if (!square) break; /* which is prettier? */
         length++;
     }
     return string;
