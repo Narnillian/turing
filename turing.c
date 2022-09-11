@@ -53,9 +53,8 @@ int freevars();
 u_int8_t verbose = 0;
 u_int8_t xverbose = 0;
 char *preset1 = "(f;4Lf,4Lf,3Rf,2Lf,0Rf,0Rb)(*b;5LB,0Rb,5LB,4Rb,H,2Rb)(F;5Rf,1RF,4Rb,2RF,H,1Rf)(B;1LB,0RB,3LF,4RB,3LB,2RB)|00000005155*0000000";
-                                                                                                                           
-char *preset2 = NULL; /*          these will be made eventually                 */  /* i may want to make them external files, so it doesn't take up too much */
-char *preset3 = NULL; /*          there will be preset machines                 */  /* memory, and other people could use the special features i have planned */
+char *preset2 = NULL; /*          these will be made eventually (base10 adder?) */  /* i may want to make them external files, so it doesn't take up too much */
+char *preset3 = NULL; /*          there will be preset machines (base2  adder?) */  /* memory, and other people could use the special features i have planned */
 char *fullspec = NULL; /*       machine we are using                            */
 int actstate = 0; /*            active state                                    */
 square *head = NULL; /*         which square the head is pointing to on the tape*/
@@ -64,7 +63,7 @@ int values; /*                  how many values a single tape square can have   
 
 int main(int argc, char **argv) {
     if (argv[1] && *argv[1] == 'v') verbose = 1; /* this is temp */
-    //if (argv[1] && *argv[1] == "vv") xverbose = 1; /* this is wrong */ //screw this
+    //if (argv[1] && (strlen(argv[1]) > 1) && argv[1] == "vv") xverbose = (verbose = 1); /* this is wrong */ //screw this
     fullspec = preset1; /* this is temp */
     //printf("Instruction loading:\n\n");
     loadinstrs();
@@ -96,8 +95,8 @@ int loadinstrs() {
         if (*readchar == '(') {
         if (verbose) printf("OPEN-PAREN\n");
         if (xverbose) {
-            if (verbose) printf(">%d\n>%d\n", sizeof(*allstates), (states+1)*sizeof(*allstates));
-            if (verbose) printf("There are \033[46m%d instruction sets\033[0m\n", states+1);
+            printf(">%d\n>%d\n", sizeof(*allstates), (states+1)*sizeof(*allstates));
+            printf("There are \033[46m%d instruction sets\033[0m\n", states+1);
         }
         allstates = n_realloc(allstates, (states+1)*sizeof(*allstates));
         allstates[states].instructions = NULL;
@@ -253,8 +252,8 @@ int loadtape() {
         squares++;
         
     }
-
-    printf("%s\n",tapetostring()); /* not permanent */
+    char *tapestring;
+    printf("%s\n", tapestring = tapetostring()); free(tapestring);/* not permanent */
 
     return 0;
 
@@ -276,9 +275,10 @@ char *tapetostring() {
         //printf("<%d||%c\n",length,square->value);
         string[length-1] = square->value;
         //if (square->right != NULL) {square = square->right;} else break;
-        square = square->right ? square->right : NULL; if (!square) break; /* which is prettier? */
+        square = square->right ? square->right : NULL; if (!square) break;
         length++;
     }
+
     return string;
 }
 
@@ -286,5 +286,6 @@ char *tapetostring() {
 int freevars() {
     /* it might be good practice to free all the parts of allstates */
     free(allstates);
+    free(tape);
     return 0;
 }

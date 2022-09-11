@@ -1,3 +1,9 @@
 --list of all variables that are `malloc`ed, so i dont forget to free them
 
-statelist
+global: 
+    allstates
+    tape
+    
+
+tapetostring:
+    string
