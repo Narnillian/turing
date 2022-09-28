@@ -48,6 +48,7 @@ void *n_realloc(void * ptr, size_t size);
 int loadinstrs();
 int loadtape();
 char *tapetostring();
+int runmachine();
 int freevars();
 
 u_int8_t verbose = 0;
@@ -68,6 +69,7 @@ int main(int argc, char **argv) {
     //printf("Instruction loading:\n\n");
     loadinstrs();
     loadtape();
+    runmachine();
     freevars();
     return 0;
 }
@@ -259,7 +261,6 @@ int loadtape() {
 
 }
 
-
 char *tapetostring() {
     square *square = &tape[0];
     char *string = malloc((size_t)1);
@@ -282,6 +283,14 @@ char *tapetostring() {
     return string;
 }
 
+
+int runmachine() {
+    while (1) {
+        head->value = allstates[actstate].instructions[atoi(&head->value)].newval;
+        /* fix actstate's design, then put other stuff here */
+
+    }
+}
 
 int freevars() {
     /* it might be good practice to free all the parts of allstates */
