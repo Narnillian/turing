@@ -3,6 +3,8 @@
 global: 
     allstates
     tape
+    statenames
+    stateindex
     
 
 tapetostring:
