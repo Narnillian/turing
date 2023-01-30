@@ -61,7 +61,7 @@ char *fullspec = NULL; /*       machine we are using                            
 int actstate = 0; /*            active state                                    */
 square *head = NULL; /*         which square the head is pointing to on the tape*/
 char **statenames = NULL;
-int    *stateindex = NULL;
+int   *stateindex = NULL;
 
 
 int main(int argc, char **argv) {
@@ -121,55 +121,62 @@ int loadinstrs() {
                 }
             }
 
+            printf("read: %p\n",readchar);
+            printf("full: %p\n",fullspec);
 
-            /* find place to insert new state */
-            int insert = 0;
-            int midpoint = 0; /* as is: runs through the loop once to get to the real midpoint. change it to `int midpoint = states/2` to reduce that one loop */
-            int prevmid = states;
-            if (states != 0) while (1) {
-                if (strcmp(statenames[midpoint],allstates[states].title) > 0 && strcmp(statenames[midpoint-1],allstates[states].title) < 0) {
-                    printf("found\n");
-                    insert = midpoint;
-                    break;
-                }
-                if (strcmp(statenames[midpoint],allstates[states].title) < 0) /* statenames[midpoint] is alphabetically before allstates[states].title */ {
-                    printf("before\n");
-                    midpoint/=2;
-                    continue;
-                }
-                if (strcmp(statenames[midpoint],allstates[states].title) > 0) /* statenames[midpoint] is alphabetically after  allstates[states].title */ {
-                    printf("after\n");
-                    int tmp = midpoint;
-                    midpoint = prevmid+((states-prevmid)/2);
-                    prevmid = tmp;
-                    continue;
-                }
-            }
-            /* insert new state */
-            
 
-            //char hold[3];
-            //int i = 0;
-            //do {
-            //    char tmp[3];
-            //    for (int j=0;j<3;j++) { /* tmp = *statenames[midpoint+i]; */
-            //        tmp[j]=statenames[midpoint+i+j];
+
+            ///* find place to insert new state */
+            //int midpoint = 0; /* as is: runs through the loop once to get to the real midpoint. change it to `int midpoint = states/2` to reduce that one loop */
+            //int prevmid = states;
+            //if (states != 0) while (1) {
+            //    if (strcmp(statenames[midpoint],allstates[states].title) > 0 && strcmp(statenames[midpoint-1],allstates[states].title) < 0) {
+            //        printf("found\n");
+            //        break;
             //    }
-            //    statenames[midpoint+i] = hold;
-            //    *hold = *tmp;
-            //    i++;
-            //} while (statenames[i]);
-
-            //printf("%d ~ %d\n",states,sizeof(statenames));
-            //char tmp[3];
-            ///* i have a basic idea. flesh it out on paper */
-            //for (int i = 0; *statenames[i]; i++) {
-            //    if (strcmp(statenames[i],allstates[states].title) < 0) { /* statenames[i] is alphabetically before allstates[states].title */
-            //        *tmp = *statenames[i];
-            //        //statenames[i]
-
+            //    if (strcmp(statenames[midpoint],allstates[states].title) < 0) /* statenames[midpoint] is alphabetically before allstates[states].title */ {
+            //        printf("before\n");
+            //        midpoint/=2;
+            //        continue;
+            //    }
+            //    if (strcmp(statenames[midpoint],allstates[states].title) > 0) /* statenames[midpoint] is alphabetically after  allstates[states].title */ {
+            //        printf("after\n");
+            //        int tmp = midpoint;
+            //        midpoint = prevmid+((states-prevmid)/2);
+            //        prevmid = tmp;
+            //        continue;
             //    }
             //}
+
+            //int location = states;
+            
+            //if (states != 0) {
+            //    int location = states;
+            //    while (location>0) {
+
+            //        printf("l%d\n",location);
+            //        //printf("~%s\n",statenames[location]);
+            //        printf(">%d\n",strcmp(statenames[location],allstates[states].title));
+            //        printf("<%d\n",strcmp(statenames[location-1],allstates[states].title));
+            //        //if (strcmp(statenames[location],allstates[states].title) > 0 && strcmp(statenames[location-1],allstates[states].title) < 0) {
+            //        //    printf("hi\n");
+            //        //    statenames[location] = readchar;
+            //        //    stateindex[location] = states;
+            //        //}
+            //        //statenames[location] = statenames[location-1];
+            //        //stateindex[location] = stateindex[location-1];
+            //        location--;
+            //    }
+            //} else {
+            //    statenames[0] = allstates[states].title;
+            //    stateindex[0] = states;
+            //}
+
+            //int tmp = 0;
+            //while (statenames[tmp]) {
+            //    printf("%c",*statenames[tmp]);
+            //}
+            //printf("\n");
 
         }
         readchar++;
