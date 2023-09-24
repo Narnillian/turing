@@ -32,7 +32,7 @@ struct {
     
     struct { /* one instruction */
         unsigned int halt:1; /* HALT = 1, !HALT = 0 */
-        unsigned int movehead:2; /* 01 means RIGHT, 11 means LEFT, 00 means NONE */
+        unsigned int movehead:2; /* `01` means RIGHT, `11` means LEFT, `00` means NONE */
         char newval; /* value to write at HEAD */
         char newstate[3]; /* title of new interperative state to change to */
     } *instructions;
@@ -40,9 +40,9 @@ struct {
 } *allstates = NULL; /* global list of all states */
 
 struct square {
-    char value;
-    square *left;
-    square *right;
+    char value; /* value of the tape-square */
+    square *left; /* tape-square to the left of this one */
+    square *right; /* tape-square to the right of this one */
 
 } *tape = NULL;
 
@@ -98,11 +98,11 @@ int loadinstrs() {
             allstates[states].instructions = NULL;
             allstates[states].instructions = n_realloc(allstates[states].instructions, (instrs+1)*sizeof(*allstates[states].instructions));
             
-            statenames = n_realloc(statenames, states+1);                /* */ 
+            statenames = n_realloc(statenames, states+1*(sizeof(*statenames)));                /* */ 
                 statenames[states] = NULL;                              /* */
                 statenames[states] = n_realloc(statenames[states], 3); /* */
                 statenames[states] = "\0\0\0";                        /* */
-            stateindex = n_realloc(stateindex, states+1);
+            stateindex = n_realloc(stateindex, states+1*(sizeof(*stateindex)));
                 stateindex[states] = 0;
         } else {
             printf("MACHINE NOT CONFIGURED PROPERLY\n");
@@ -121,12 +121,30 @@ int loadinstrs() {
                 }
             }
 
-            printf("read: %p\n",readchar);
-            printf("full: %p\n",fullspec);
 
 
 
-            ///* find place to insert new state */
+            /* * /
+            if(!states) {
+                //stateindex[0] = 
+            } else {
+                /* find place to insert new state *
+                int insert = states-1;
+                while(1) {
+                    printf("<%s\n", statenames[states-insert]);
+                    if (strcmp(statenames[insert],allstates[states].title) > 0) {
+                        insert++;
+                        printf("Hey\n");
+                        break;
+                    }
+                    insert--;
+                }
+                printf("-- %d\n",insert);
+            }
+            /* */
+
+
+
             //int midpoint = 0; /* as is: runs through the loop once to get to the real midpoint. change it to `int midpoint = states/2` to reduce that one loop */
             //int prevmid = states;
             //if (states != 0) while (1) {
@@ -240,14 +258,14 @@ int loadinstrs() {
     if (verbose) {
         printf("There are %d states\n",states);
         printf("There are %d insructions per state\n", instrs);
-        printf("SIZE: %d\n",sizeof(allstates[0].title));
+        printf("SIZE: %d\n",(int) sizeof(allstates[0].title));
         printf("ACTIVE: %d\n",states);
         printf("Name of Set [0]: '%s'\n", allstates[0].title); /* f */
         printf("Name of Set [1]: '%s'\n", allstates[1].title); /* b */
         printf("Name of Set [2]: '%s'\n", allstates[2].title); /* F */
         printf("Name of Set [3]: '%s'\n", allstates[3].title); /* B */
         printf("New value of instruction [0] in set [0]: %c\n", allstates[0].instructions[0].newval);
-        printf("New state of instruction [5] in set [2]: %c\n", allstates[2].instructions[5].newstate);
+        printf("New state of instruction [5] in set [2]: %s\n", allstates[2].instructions[5].newstate);
     }
     return 0;
 }
@@ -309,9 +327,22 @@ char *tapetostring() {
 
 
 int runmachine() {
-    //while (allstates[actstate].instructions->halt != 1) {
-    //    head->value = allstates[actstate].instructions[atoi(&head->value)].newval;
-    //    /* fix actstate's design, then put other stuff here */
+    //while (allstates[actstate].instructions->halt != 1) { /* while instruction is not HALT */
+    int prevalue = atoi(&head->value);
+    printf("%c\n", head->value);
+
+    head->value = allstates[actstate].instructions[prevalue].newval; /* change value of currently selected square */
+    printf("%c\n", head->value);
+
+    printf("%i\n", allstates[actstate].instructions[prevalue].movehead);
+    if (allstates[actstate].instructions[prevalue].movehead) {
+        head = allstates[actstate].instructions[prevalue].movehead == 3 ? head->left : head->right;
+    }
+    printf("%c\n", head->value);
+
+    //actstate = 
+    /* fix actstate's design, then put other stuff here */
+
 
     //}
     return 0;
